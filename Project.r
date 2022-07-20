@@ -74,5 +74,19 @@ plot(s22$map)
 
 
 
+# importing Copernicus data for winter 2021
+swi2021 <- raster("c_gls_LST_202101181400_GLOBE_GEO_V2.0.1.nc")
+# cropping the image focusing on the same area of interest
+swi21 <- crop(swi2021, ext)
+plot(swi21)
 
+# importing Copernicus data for winter 2021
+swi2022 <- raster("c_gls_LST_202202051400_GLOBE_GEO_V2.0.1.nc")
+# cropping the image focusing on the same area of interest
+swi22 <- crop(swi2022, ext)
+plot(swi22)
+
+par(mfrow=c(1,2))
+plot(swi21)
+plot(swi22)
 
