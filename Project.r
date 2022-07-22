@@ -8,20 +8,20 @@ setwd("/Users/magalicorti/Desktop/project/")
 # recalling the libraries for already installed packaged we will need
 library(raster)        # to import files in R, and stacking operaytions
 library(ggplot2)       # to plot data with ggplot function
-library(gridExtra) 
-library (RStoolbox)    # for remote sensing data processing
+library(gridExtra)     # to plot together plots made with ggplot
+library (RStoolbox)    # for remote sensing data analysis -> to make the classification
 library(ncdf4)         # to open Copernicus data with nc extention
 library(viridis)       # to use viridis palette
 library(patchwork)     # to plot together plots made with ggplot
  
 
 # importing Copernicus data for winter 2022
-snow20220205 <- raster("c_gls_SCE500_202202050000_CEURO_MODIS_V1.0.1.nc")
+snow20220125 <- raster("c_gls_SCE500_202201250000_CEURO_MODIS_V1.0.1.nc")
 # visualizing the image imported
-plot(snow20220205)
-# cropping the image focusing on the area of interest (Northern Itlay)
-ext <- c(8, 11, 45, 47)
-snow22 <- crop(snow20220205, ext)
+plot(snow20220125)
+# cropping the image focusing on the area of interest (Central Alps in Northern Itlay)
+ext <- c(7, 13, 45.5, 47)
+snow22 <- crop(snow20220125, ext)
 # visualizing new image
 plot(snow22)
 
@@ -35,9 +35,9 @@ plot(snow21)
 p21 <- ggplot() + geom_raster(snow21, mapping = aes(x=x, y=y, fill = Snow.Cover.Extent)) + scale_fill_viridis() + ggtitle("Snow Cover in winter 2021")
 p22 <- ggplot() + geom_raster(snow22, mapping = aes(x=x, y=y, fill = Snow.Cover.Extent)) + scale_fill_viridis() + ggtitle("Snow Cover in winter 2022")
 
-# to visualize the two plots together in an horizontal sequence
-# if I wanted to visualize them in a vertical sequence Ishuold have used / instead of +
-p21 + p22
+# to visualize the two plots together in a vertical sequence
+# if I wanted to visualize them in an horizontal sequence Ishuold have used + instead of /
+p21 / p22
 
 
 # otherwise to import multiple data with with the same pattern in the name I can create a list and use the lapply function
@@ -69,8 +69,8 @@ hist(snow22, xlim = c(0,200))
 # PERCHE DISTRIBUZIONE DEI. DATI LUNGO LINEE?? GUARDO MAPPE
 # plotting values of 2022 against 2021
 # comparing data one in function of the other
-plot(snow21, snow22) # making line  passing trough 0
-abline(0, 1, col="red") # plotting line 
+plot(snow21, snow22, xlab = "Snow Cover Extent in 2021", ylab = "Snow Cover Extent in 2022") 
+abline(0, 1, col="red") # plotting line, making it passing trough 0
 
 # plotting automatically all graphs together, very usefull when we have many graphs
 pairs(snowstack)
@@ -88,18 +88,51 @@ total <- 240000 # tot amount of pixels -> run s21 -> look at tird value of dimen
 # compute percentage of snow cover (frequency of class 4 / total)
 propsnow21 <- 106071/total
 propsnow21 # 0.4419625 = 44%
+propother21 <- 1 - propsnow21
+propother21 # 0.5580375 = 56%
+
+# building a dataframe with type of cover and proportion of pixels
+cover <- c("Snow", "Other")
+prop21 <- c(propsnow21, propother21)
+proportion21 <- data.frame(cover, prop21) # proportion of pixels in 2021
+proportion21 # quantitative data
+
+# plotting data with ggplot2
+# ggplot function -> first argument = dataset, other arguments = aesthetic, color stored in cover
+# geom_bar function explainig type of graph
+# stat - statistics used, identity bc we're using data as they are (no median or mean)
+# for changing limit from 0 to 1 use ylim()
+PR21 <- ggplot(proportion21, aes(x=cover, y=prop21, color=cover)) + geom_bar(stat="identity", fill="white") + ylim(0,1)
+
 
 # let's do the same thing for winter 2022
 s22 <- unsuperClass(snow22, nClasses=4)
 plot(s22$map)
 freq(s22$map)
-propsnow22 <- 11938/total
-propsnow22 # 0.04974167 = 5%
 
-
+# plotting the two maps in one row and two column
 par(mfrow=c(1,2))
 plot(s21$map)
 plot(s22$map)
+
+propsnow22 <- 11938/total
+propsnow22 # 0.04974167 = 5%
+propother22 <- 1 - propsnow22
+propother22 # 0.9502583 = 95%
+
+cover <- c("Snow", "Other")
+prop22 <- c(propsnow22, propother22)
+proportion22 <- data.frame(cover, prop22) 
+proportion22
+
+PR22 <- ggplot(proportion22, aes(x=cover, y=prop22, color=cover)) + geom_bar(stat="identity", fill="white") + ylim(0,1)
+
+# plotting the 2 ggplot graph together in one row using a different package tha patchwork
+grid.arrange(PR21, PR22, nrow=1)
+
+
+
+
 
 
 
