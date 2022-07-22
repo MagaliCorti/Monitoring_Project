@@ -15,6 +15,8 @@ library(viridis)       # to use viridis palette
 library(patchwork)     # to plot together plots made with ggplot
  
 
+# SCE - Snow Cover Extent
+# Copernicus data with geometric resolution of 500m x 500m per pixel
 # importing Copernicus data for winter 2022
 snow20220125 <- raster("c_gls_SCE500_202201250000_CEURO_MODIS_V1.0.1.nc")
 # visualizing the image imported
@@ -78,22 +80,27 @@ pairs(snowstack)
 
 
 # computing proportiuons of snow cover in winter 2021
-# passing from a layers with values ranging 0-200 to 4 values (1 - 2 - 3 - 4)
-s21 <- unsuperClass(snow21, nClasses=4)
-# plotting the new map
+# passing from a layers with values ranging 0-200 to 3 values (1 - 2 - 3)
+s21 <- unsuperClass(snow21, nClasses=3)
+# plotting the two maps, the original one and the new one after running the unsupervised classification (in one column and two rows) -> identifying the three classes
+par(mfrow=c(2,1))
+plot(snow21)
 plot(s21$map)
 # computing the frequency for each class
 freq(s21$map)
-total <- 240000 # tot amount of pixels -> run s21 -> look at tird value of dimension (ncell)
-# compute percentage of snow cover (frequency of class 4 / total)
-propsnow21 <- 106071/total
-propsnow21 # 0.4419625 = 44%
-propother21 <- 1 - propsnow21
-propother21 # 0.5580375 = 56%
+total <- 360000 # tot amount of pixels -> run s21 -> look at tird value of dimension (ncell)
+# compute percentage per type of cover (frequency of class / total)
+propsnow21 <- 239706/total # class 2
+propbare21 <- 94315/total # class 1
+propwater21 <- 25979/total # class 3
+
+propbare21 # 0.2619861. = 26.2%
+propsnow21 # 0.66585 = 66.6%
+propwater21 # 0.07216389 = 7.2%
 
 # building a dataframe with type of cover and proportion of pixels
-cover <- c("Snow", "Other")
-prop21 <- c(propsnow21, propother21)
+cover <- c("Snow", "Bare", "Water/Cloud")
+prop21 <- c(propsnow21, propbare21, propwater21)
 proportion21 <- data.frame(cover, prop21) # proportion of pixels in 2021
 proportion21 # quantitative data
 
@@ -106,22 +113,19 @@ PR21 <- ggplot(proportion21, aes(x=cover, y=prop21, color=cover)) + geom_bar(sta
 
 
 # let's do the same thing for winter 2022
-s22 <- unsuperClass(snow22, nClasses=4)
+s22 <- unsuperClass(snow22, nClasses=3)
+par(mfrow=c(2,1))
 plot(s22$map)
+plot(snow22)
+
 freq(s22$map)
-
-# plotting the two maps in one row and two column
-par(mfrow=c(1,2))
-plot(s21$map)
-plot(s22$map)
-
-propsnow22 <- 11938/total
-propsnow22 # 0.04974167 = 5%
-propother22 <- 1 - propsnow22
-propother22 # 0.9502583 = 95%
-
-cover <- c("Snow", "Other")
-prop22 <- c(propsnow22, propother22)
+total <- 360000
+# compute percentage per type of cover (frequency of class / total)
+propsnow22 <- 118301/total # class 3
+propbare22 <- 176219/total # class 1
+propwater22 <- 65480/total # class 2
+# dataframe with proportion per cover type
+prop22 <- c(propsnow22, propbare22, propwater22)
 proportion22 <- data.frame(cover, prop22) 
 proportion22
 
@@ -139,23 +143,7 @@ grid.arrange(PR21, PR22, nrow=1)
 
 
 
-# SWI messeggio di warning
-# importing Copernicus data for surface water index spring 2021
-swi2021 <- raster("c_gls_SWI1km_202104021200_CEURO_SCATSAR_V1.0.1.nc")
-# cropping the image focusing on the same area of interest
-swi21 <- crop(swi2021, ext)
-plot(swi21)
-
-# importing Copernicus data for surface water index spring 2022
-swi2022 <- raster("c_gls_SWI1km_202204021200_CEURO_SCATSAR_V1.0.2.nc")
-# cropping the image focusing on the same area of interest
-swi22 <- crop(swi2022, ext)
-plot(swi22)
-
-par(mfrow=c(1,2)) # sono ugualiiii
-plot(swi21)
-plot(swi22)
-dev.off()
+# SWI messeggio di warning NON VA BENE
 
 
 
