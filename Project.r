@@ -45,21 +45,11 @@ p22 <- ggplot() + geom_raster(snow22, mapping = aes(x=x, y=y, fill = Snow.Cover.
 p21 / p22
 
 
-# otherwise to import multiple data with the same pattern in the name I can create a list and use the lapply function
-rlist <- list.files(pattern = "SCE")
-rlist # list of 2 images
-list_rast <- lapply(rlist, brick)   # can also use raster function 
-list_rast
-# creating a stack
-snowstack <- stack(list_rast)
-snowstack
-
-
 # computing differece in snow cover between 2021 and 2022
 SCEdif <- (snow22 - snow21)
 plot(SCEdif)
 # changing color palette for a more clear visualization
-cldif = colorRampPalette(c("blue", "white", "red"))(100)
+cldif = colorRampPalette(c("blue", "white", "red"))(100) # 100 number of color from blue to red
 plot(SCEdif, col=cldif) # in blue the snow missing in 2022 with respect to 2021
 
 
@@ -139,17 +129,35 @@ grid.arrange(PR21, PR22, nrow=1)
 
 ##### Now let's see if we can see differences in the temperature of the lakes present in the region #####
 
+# checking the snow cover extent in the January, February and March for both the year considered
+# when the snow is consistenly molten?
+# does the melting of snow affect the surface water temperature?
+
+# to import multiple data with the same pattern in the name I can create a list and use the lapply function
+rlist <- list.files(pattern = "SCE")
+rlist # list of 8 images
+# applying to all the objects in the list the rester function
+list_rast <- lapply(rlist, raster)
+list_rast
+# creating a stack
+snowstack <- stack(list_rast)
+snowstack
+
+# plotting together all the images
+plot(snowstack)
+
+
 # LSWT - Lake Surface Water Temperature
 # Copernicus data with geometric resolution of 1000m x 1000m per pixel
 
 # importing Copernicus data for land surface temperature winter 2021
-lswt2021 <- raster("c_gls_LSWT_202103010000_GLOBE_SLSTRAB_v1.1.0.nc")
+lswt2021 <- raster("c_gls_LSWT_202102210000_GLOBE_SLSTRAB_v1.1.0.nc")
 # cropping the image focusing on the same area of interest
 lswt21 <- crop(lswt2021, ext)
 plot(lswt21)
 
 # importing Copernicus data for land surface temperature winter 2021
-lswt2022 <- raster("c_gls_LSWT_202203010000_GLOBE_SLSTRAB_v1.1.0.nc")
+lswt2022 <- raster("c_gls_LSWT_202202210000_GLOBE_SLSTRAB_v1.1.0.nc")
 # cropping the image focusing on the same area of interest
 lswt22 <- crop(lswt2022, ext)
 plot(lswt22)
@@ -160,14 +168,8 @@ plot(lswt22)
 
 # new cropping focusing on the lake area
 ext1 <- c(8, 12, 45, 46.5)
-lswt2021 <- raster("c_gls_LSWT_202103010000_GLOBE_SLSTRAB_v1.1.0.nc")
-# cropping the image focusing on the same area of interest
 lswt21 <- crop(lswt2021, ext1)
 plot(lswt21)
-
-# importing Copernicus data for land surface temperature winter 2021
-lswt2022 <- raster("c_gls_LSWT_202203010000_GLOBE_SLSTRAB_v1.1.0.nc")
-# cropping the image focusing on the same area of interest
 lswt22 <- crop(lswt2022, ext1)
 plot(lswt22)
 
@@ -186,7 +188,6 @@ lt21 / lt22
 LSWTdif <- (lswt22 - lswt21)
 plot(LSWTdif)
 # changing color palette for a more clear visualization
-cldif = colorRampPalette(c("blue", "white", "red"))(100)
 plot(LSWTdif, col=cldif) # in red the higest temperature in 2022 with respect to 2021
 # let's use ggplot
 ldif22 <- ggplot() + geom_raster(LSWTdif, mapping = aes(x=x, y=y, fill = layer))+ scale_fill_viridis(option="magma") + ggtitle("Difference in Lake Surface Water Temperature")
@@ -196,7 +197,6 @@ par(mfrow=c(1,2))
 hist(lswt21, xlim = c(275,285), ylim = c(0,450))
 hist(lswt22, xlim = c(275,285), ylim = c(0,450))
 
-# PERCHE DISTRIBUZIONE DEI. DATI LUNGO LINEE?? GUARDO MAPPE -> risoluzione, cropping ??
 # plotting values of 2022 against 2021
 # comparing data one in function of the other
 plot(lswt21, lswt22, xlab = "Lake Surface Water Temperature in 2021", ylab = "Lake Surface Water Temperature in 2022", xlim = c(275,285), ylim = c(275,285)) 
@@ -210,17 +210,63 @@ abline(0, 1, col="red") # plotting line, making it passing trough 0
 
 
 
-# SWI messeggio di warning NON VA BENE
+
+# Use diverging colors to plot the positive and negative change in LAI
+# from diverging palette from the colorspace package
+red_blue <- diverging_hcl(5, "Red-Blue")
+red_blue # recall the variable to see the color palette
+# "#841859" "#F398C4" "#F6F6F6" "#7CC57D" "#005600"
+
+# this palette does not center in 0 with white color
+
+# palette for the top half of the image, with positive values
+red <- colorRampPalette(colors = c("red", "white"))(70)
+
+# Palette for the bottom half of the image, with negative values
+blue <- colorRampPalette(colors = c("white", "blue"))(30)
+
+# Combine the two color palettes
+red_blue <- c(red, blue)
+
+# Plot!
+plot(LSWTdif, col=red_blue) # now the midpoint of the palette is in 0!
+
+# it doesn't seems to be many differences in the surface temperature of the lakes
+# probably the melting of snow doesn't affect the surface water temperature
 
 
-# LST (bassa qualità immagine)
+
+
+
+
+
+####
+
 # importing Copernicus data for land surface temperature winter 2021
-lst2021 <- raster("c_gls_LST_202101181400_GLOBE_GEO_V2.0.1.nc")
+swe2021 <- raster("c_gls_SWE5K_202201250000_NHEMI_SSMIS_V1.0.2.nc")
+# cropping the image focusing on the same area of interest
+swe21 <- crop(swe2021, ext)
+
+par(mfrow=c(1,2))
+plot(swe21)
+plot(snow22)
+
+
+
+# SWI messeggio di warning NON VA BENE
+# SSM NON VA BENE dati a fascie
+# LST (bassa qualità immagine)
+# NDVI da errore nel caricare il file!!!
+
+
+
+# importing Copernicus data for land surface temperature winter 2021
+lst2021 <- raster("c_gls_LST10-DC_202101110000_GLOBE_GEO_V2.0.1.nc")
 # cropping the image focusing on the same area of interest
 lst21 <- crop(lst2021, ext)
 plot(lst21)
 # importing Copernicus data for land surface temperature winter 2021
-lst2022 <- raster("c_gls_LST_202202051400_GLOBE_GEO_V2.0.1.nc")
+lst2022 <- raster("c_gls_LST10-DC_202201110000_GLOBE_GEO_V2.0.1.nc")
 # cropping the image focusing on the same area of interest
 lst22 <- crop(lst2022, ext)
 plot(lst22)
