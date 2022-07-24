@@ -316,7 +316,7 @@ lt21 / lt22
 LSWTdif <- (lswt22 - lswt21)
 plot(LSWTdif)
 # changing color palette for a more clear visualization
-plot(LSWTdif, col=cldif) # in red the higest temperature in 2022 with respect to 2021
+plot(LSWTdif, col=cldif)
 # let's use ggplot
 ldif22 <- ggplot() + geom_raster(LSWTdif, mapping = aes(x=x, y=y, fill = layer))+ scale_fill_viridis(option="magma") + ggtitle("Difference in Lake Surface Water Temperature")
 
@@ -364,15 +364,27 @@ fpar2022 <- raster("c_gls_FAPAR300-RT6_202203100000_GLOBE_OLCI_V1.1.2.nc")
 fpar22 <- crop(fpar2022, ext)
 plot(fpar22)
 
+fpar2021 <- raster("c_gls_FAPAR300-RT0_202103100000_GLOBE_OLCI_V1.1.1(1).nc")
+# cropping the image focusing on the same area of interest
+fpar21 <- crop(fpar2021, ext)
+plot(fpar21)
+
+par(mfrow=c(2,1))
+plot(fpar21)
+plot(fpar22)
 
 
 
 
 
 
+setwd("/Users/magalicorti/Desktop/project/SCE/")
 
 
-
+smarch2021 <- raster("c_gls_SCE500_202103150000_CEURO_MODIS_V1.0.1.nc")
+# cropping the image focusing on the same area of interest
+smarch21 <- crop(smarch2021, ext)
+plot(smarch21)
 
 
 
