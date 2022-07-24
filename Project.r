@@ -15,7 +15,7 @@ library(patchwork)     # to plot together plots made with ggplot
  
 
 
-##### With this project I want to highligt the differences in Snow Cover Extent in the Cetral Alps in Nortern Itlay between the winter 2021 and winter 2022 ##### 
+##### With this project I want to highligt the differences in Snow Cover Extent in the Cetral Alps in Nortern Italy between the winter 2021 and winter 2022 ##### 
 
 # SCE - Snow Cover Extent
 # Copernicus data with geometric resolution of 500m x 500m per pixel
@@ -24,7 +24,7 @@ library(patchwork)     # to plot together plots made with ggplot
 snow20220125 <- raster("c_gls_SCE500_202201250000_CEURO_MODIS_V1.0.1.nc")
 # visualizing the image imported
 plot(snow20220125)
-# cropping the image focusing on the area of interest (Central Alps in Northern Itlay)
+# cropping the image focusing on the area of interest (Central Alps in Northern Italy)
 ext <- c(7, 13, 45.5, 47)
 snow22 <- crop(snow20220125, ext)
 # visualizing new image
@@ -127,11 +127,49 @@ grid.arrange(PR21, PR22, nrow=1)
 
 
 
+##### Checking the state of snow cover extent in summer #####
+
+# importing Copernicus data for summer 2021
+snow20210720 <- raster("c_gls_SCE500_202107200000_CEURO_MODIS_V1.0.1.nc")
+# cropping the image focusing on the area of interest (Central Alps in Northern Italy)
+snowsum21 <- crop(snow20210720, ext)
+# visualizing cropped image
+plot(snowsum21)
+
+# importing Copernicus data for summer 2022
+snow20220722 <- raster("c_gls_SCE500_202207220000_CEURO_MODIS_V1.0.1.nc")
+# cropping the image
+snowsum22 <- crop(snow20220720, ext)
+# visualizing cropped image
+plot(snowsum22)
+
+# using ggplot function with viridis (option viridis = default)
+ps21 <- ggplot() + geom_raster(snowsum21, mapping = aes(x=x, y=y, fill = Snow.Cover.Extent)) + scale_fill_viridis() + ggtitle("Snow Cover in summer 2021")
+ps22 <- ggplot() + geom_raster(snowsum22, mapping = aes(x=x, y=y, fill = Snow.Cover.Extent)) + scale_fill_viridis() + ggtitle("Snow Cover in summer 2022")
+
+# to visualize the two plots together in a vertical sequence
+ps21 / ps22
+
+
+# computing differece in snow cover between summer 2021 and 2022
+SCEsumdif <- (snowsum22 - snowsum21)
+plot(SCEsumdif)
+# changing color palette for a more clear visualization with blue-red palette
+plot(SCEsumdif, col=cldif) # in blue the snow missing in 2022 with respect to 2021
+
+
+
+
+
+
 ##### Now let's see if we can see differences in the temperature of the lakes present in the region #####
 
 # checking the snow cover extent in the January, February and March for both the year considered
 # when the snow is consistenly molten?
 # does the melting of snow affect the surface water temperature?
+
+# setting the working directory with the time series
+setwd("/Users/magalicorti/Desktop/project/SCE/")
 
 # to import multiple data with the same pattern in the name I can create a list and use the lapply function
 rlist <- list.files(pattern = "SCE")
@@ -184,6 +222,7 @@ lt22 <- ggplot() + geom_raster(lswt22, mapping = aes(x=x, y=y, fill = lake.surfa
 # to visualize the two plots together in a vertical sequence
 lt21 / lt22
 
+
 # computing differece in lake surface temperature between 2021 and 2022
 LSWTdif <- (lswt22 - lswt21)
 plot(LSWTdif)
@@ -192,10 +231,27 @@ plot(LSWTdif, col=cldif) # in red the higest temperature in 2022 with respect to
 # let's use ggplot
 ldif22 <- ggplot() + geom_raster(LSWTdif, mapping = aes(x=x, y=y, fill = layer))+ scale_fill_viridis(option="magma") + ggtitle("Difference in Lake Surface Water Temperature")
 
+# this palette does not center in 0 with white color we must recalibrate it
+# extracting the min and max values of LSWTdif, multiplying it by 10 we obtain the number of shades for each color
+LSWTdif # values: -3.58, 1.64  (min, max)
+# palette for the bottom half of the image, with negative values
+red <- colorRampPalette(colors = c("red", "white"))(35.5)
+# palette for the top half of the image, with positive values
+blue <- colorRampPalette(colors = c("white", "blue"))(16.4)
+# combining the two color palettes
+red_blue <- c(red, blue)
+
+# plotting the snow difference with the new calibrated palette
+plot(LSWTdif, col=red_blue)
+
+# it doesn't seems to be many differences in the surface temperature of the lakes
+# probably the melting of snow doesn't affect the surface water temperature
+
+
 # plotting frequency distribution histogrames
 par(mfrow=c(1,2))
-hist(lswt21, xlim = c(275,285), ylim = c(0,450))
-hist(lswt22, xlim = c(275,285), ylim = c(0,450))
+hist(lswt21, xlim = c(279,285), ylim = c(0,500))
+hist(lswt22, xlim = c(279,285), ylim = c(0,500))
 
 # plotting values of 2022 against 2021
 # comparing data one in function of the other
@@ -209,47 +265,25 @@ abline(0, 1, col="red") # plotting line, making it passing trough 0
 
 
 
+#### Now let's see the state of the vegetation looking at the fraction of the solar radiation absorbed by live leaves for the photosynthesis  ####
 
+# FPAR - Fraction of Absorbed Photosynthetically Active Radiation
 
-# Use diverging colors to plot the positive and negative change in LAI
-# from diverging palette from the colorspace package
-red_blue <- diverging_hcl(5, "Red-Blue")
-red_blue # recall the variable to see the color palette
-# "#841859" "#F398C4" "#F6F6F6" "#7CC57D" "#005600"
-
-# this palette does not center in 0 with white color
-
-# palette for the top half of the image, with positive values
-red <- colorRampPalette(colors = c("red", "white"))(70)
-
-# Palette for the bottom half of the image, with negative values
-blue <- colorRampPalette(colors = c("white", "blue"))(30)
-
-# Combine the two color palettes
-red_blue <- c(red, blue)
-
-# Plot!
-plot(LSWTdif, col=red_blue) # now the midpoint of the palette is in 0!
-
-# it doesn't seems to be many differences in the surface temperature of the lakes
-# probably the melting of snow doesn't affect the surface water temperature
-
-
-
-
-
-
-
-####
-
-# importing Copernicus data for land surface temperature winter 2021
-swe2021 <- raster("c_gls_SWE5K_202201250000_NHEMI_SSMIS_V1.0.2.nc")
+# importing Copernicus data for Fraction of Absorbed Photosynthetically Active Radiation in 2022
+fpar2022 <- raster("c_gls_FAPAR300-RT6_202203100000_GLOBE_OLCI_V1.1.2.nc")
 # cropping the image focusing on the same area of interest
-swe21 <- crop(swe2021, ext)
+fpar22 <- crop(fpar2022, ext)
+plot(fpar22)
 
-par(mfrow=c(1,2))
-plot(swe21)
-plot(snow22)
+
+
+
+
+
+
+
+
+
 
 
 
@@ -261,7 +295,7 @@ plot(snow22)
 
 
 # importing Copernicus data for land surface temperature winter 2021
-lst2021 <- raster("c_gls_LST10-DC_202101110000_GLOBE_GEO_V2.0.1.nc")
+lst2021 <- raster("c_gls_FAPAR300-RT6_202203100000_GLOBE_OLCI_V1.1.2.nc")
 # cropping the image focusing on the same area of interest
 lst21 <- crop(lst2021, ext)
 plot(lst21)
