@@ -44,6 +44,11 @@ p22 <- ggplot() + geom_raster(snow22, mapping = aes(x=x, y=y, fill = Snow.Cover.
 # if I wanted to visualize them in an horizontal sequence I shuold have used + instead of /
 p21 / p22
 
+# saving the file in PNG format in the output folder
+png(file="outputs/SCE_winter21-22.png", units="cm", width=25, height=20, res=600)
+p21 / p22
+dev.off()
+
 
 # computing differece in snow cover between 2021 and 2022
 SCEdif <- (snow22 - snow21)
@@ -52,18 +57,30 @@ plot(SCEdif)
 cldif = colorRampPalette(c("blue", "white", "red"))(100) # 100 number of color from blue to red
 plot(SCEdif, col=cldif) # in blue the snow missing in 2022 with respect to 2021
 
+# saving the file in PNG format in the output folder
+png(file="outputs/SCEdiff_winter21-22.png", units="cm", width=25, height=20, res=600)
+plot(SCEdif, col=cldif)
+dev.off()
+
 
 # qualitative analysis of proportions and frequency distributions
 # plotting frequency distribution of snow cover values -> plot all histograms together
 par(mfrow=c(1,2))
-hist(snow21, xlim = c(0,200))
-hist(snow22, xlim = c(0,200))
+hist(snow21, xlim = c(0,200), main = "Snow Cover Extent in winter 2021", xlab = "Flag Value")
+hist(snow22, xlim = c(0,200), main = "Snow Cover Extent in winter 2022", xlab = "Flag Value")
+
+# saving the histograms in PNG format in the output folder
+png(file="outputs/SCEhist_winter21-22.png", units="cm", width=25, height=20, res=600)
+par(mfrow=c(1,2))
+hist(snow21, xlim = c(0,200), main = "Snow Cover Extent in winter 2021", xlab = "Flag Value")
+hist(snow22, xlim = c(0,200), main = "Snow Cover Extent in winter 2022", xlab = "Flag Value")
+dev.off()
 
 
 # PERCHE DISTRIBUZIONE DEI. DATI LUNGO LINEE?? GUARDO MAPPE -> risoluzione, cropping ??
 # plotting values of 2022 against 2021
 # comparing data one in function of the other
-plot(snow21, snow22, xlab = "Snow Cover Extent in 2021", ylab = "Snow Cover Extent in 2022") 
+plot(snow21, snow22, xlab = "Snow Cover Extent in winter 2021", ylab = "Snow Cover Extent in winter 2022") 
 abline(0, 1, col="red") # plotting line, making it passing trough 0
 
 # plotting automathically all graphs together, very usefull when we have many graphs
@@ -130,16 +147,16 @@ grid.arrange(PR21, PR22, nrow=1)
 ##### Checking the state of snow cover extent in summer #####
 
 # importing Copernicus data for summer 2021
-snow20210720 <- raster("c_gls_SCE500_202107200000_CEURO_MODIS_V1.0.1.nc")
+snow20210710 <- raster("c_gls_SCE500_202107100000_CEURO_MODIS_V1.0.1.nc")
 # cropping the image focusing on the area of interest (Central Alps in Northern Italy)
-snowsum21 <- crop(snow20210720, ext)
+snowsum21 <- crop(snow20210710, ext)
 # visualizing cropped image
 plot(snowsum21)
 
 # importing Copernicus data for summer 2022
-snow20220722 <- raster("c_gls_SCE500_202207220000_CEURO_MODIS_V1.0.1.nc")
+snow20220715 <- raster("c_gls_SCE500_202207150000_CEURO_MODIS_V1.0.1.nc")
 # cropping the image
-snowsum22 <- crop(snow20220720, ext)
+snowsum22 <- crop(snow20220715, ext)
 # visualizing cropped image
 plot(snowsum22)
 
@@ -153,12 +170,84 @@ ps21 / ps22
 
 # computing differece in snow cover between summer 2021 and 2022
 SCEsumdif <- (snowsum22 - snowsum21)
-plot(SCEsumdif)
-# changing color palette for a more clear visualization with blue-red palette
-plot(SCEsumdif, col=cldif) # in blue the snow missing in 2022 with respect to 2021
+# plotting 
+plot(SCEsumdif, col=cldif)
+# results in difference very likely biased by cloud cover
+# let's look at numbers!
 
 
+# qualitative analysis of proportions and frequency distributions
+# plotting frequency distribution of snow cover values -> plot all histograms together
+par(mfrow=c(1,2))
+hist(snowsum21, xlim = c(0,200), main = "Snow Cover Extent in summer 2021", xlab = "Flag Value")
+hist(snowsum22, xlim = c(0,200), main = "Snow Cover Extent in summer 2022", xlab = "Flag Value")
 
+# plotting values of 2022 against 2021
+# comparing data one in function of the other
+plot(snowsum21, snowsum22, xlab = "Snow Cover Extent in summer 2021", ylab = "Snow Cover Extent in summer 2022") 
+abline(0, 1, col="red") # plotting line, making it passing trough 0
+
+
+# computing proportiuons of snow cover in summer 2021
+# passing from a layers with values ranging 0-200 to 3 values (1 - 2 - 3)
+ss21 <- unsuperClass(snowsum21, nClasses=3)
+# plotting the two maps, the original one and the new one after running the unsupervised classification (in one column and two rows) -> identifying the three classes
+par(mfrow=c(2,1))
+plot(snowsum21)
+plot(ss21$map)
+# computing the frequency for each class
+freq(ss21$map)
+# compute proportion per type of cover (frequency of class / total)
+# total number of pixel is the same as winter analysis, beacuse we used the same cropping, here we subtract the pixel that resulted as NA
+propsnow21s <- 7298/(total-1) # class 1
+propbare21s <- 265143/(total-1) # class 3
+propwater21s <- 87558/(total-1) # class 2
+
+propbare21s # 0.2619861. = 26.2%
+propsnow21s # 0.66585 = 66.6%
+propwater21s # 0.07216389 = 7.2%
+
+# building a dataframe with type of cover and proportion of pixels
+cover <- c("Snow", "Bare", "Water/Cloud")
+propsum21 <- c(propsnow21s, propbare21s, propwater21s)
+proportion21s <- data.frame(cover, propsum21) # proportion of pixels in 2021
+proportion21s # quantitative data
+
+# plotting data with ggplot2
+# geom_bar function explainig type of graph
+# stat - statistics used = identity because we're using data as they are (no median or mean)
+# for changing limit from 0 to 1 use ylim()
+PR21s <- ggplot(proportion21s, aes(x=cover, y=propsum21, color=cover)) + geom_bar(stat="identity", fill="white") + ylim(0,1)
+
+
+# let's do the same thing for winter 2022
+ss22 <- unsuperClass(snowsum22, nClasses=3)
+par(mfrow=c(2,1))
+plot(snowsum22)
+plot(ss22$map)
+
+freq(ss22$map)
+
+# compute proportion per type of cover (frequency of class / total)
+propsnow22s <- 2273/(total-6) # class 1
+propbare22s <- 292849/(total-6) # class 3
+propwater22s <- 64872/(total-6) # class 2
+# dataframe with proportion per cover type
+propsum22 <- c(propsnow22s, propbare22s, propwater22s)
+proportion22s <- data.frame(cover, propsum22) 
+proportion22s
+
+PR22s <- ggplot(proportion22s, aes(x=cover, y=propsum22, color=cover)) + geom_bar(stat="identity", fill="white") + ylim(0,1)
+
+# plotting the 2 ggplot graph together in one row using a different package tha patchwork
+grid.arrange(PR21s, PR22s, nrow=1)
+
+
+# let's compare winter and summer situations
+# images
+grid.arrange(p21, ps21, p21, ps22, nrow=2)
+# proportions
+grid.arrange(PR21, PR21s, PR22, PR22s, nrow=2)
 
 
 
