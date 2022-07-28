@@ -57,7 +57,6 @@ snowstack
 plot(snowstack$Snow.Cover.Extent.1)
 
 
-
 # using ggplot function with viridis (changing colorRampPalette)
 p21 <- ggplot() + geom_raster(snow21, mapping = aes(x=x, y=y, fill = Snow.Cover.Extent)) + scale_fill_viridis() + ggtitle("Snow Cover in winter 2021")
 p22 <- ggplot() + geom_raster(snow22, mapping = aes(x=x, y=y, fill = Snow.Cover.Extent)) + scale_fill_viridis() + ggtitle("Snow Cover in winter 2022")
@@ -113,7 +112,6 @@ dev.off()
 
 # plotting automathically all graphs together, very usefull when we have many graphs
 pairs(snowstack)
-
 
 
 # computing proportiuons of snow cover in winter 2021
@@ -205,6 +203,7 @@ png(file="outputs/SCE_summer21-22.png", units="cm", width=25, height=20, res=600
 ps21 / ps22
 dev.off()
 
+
 # computing differece in snow cover between summer 2021 and 2022
 SCEsumdif <- (snowsum22 - snowsum21)
 # plotting 
@@ -216,6 +215,7 @@ plot(SCEsumdif, col=cldif)
 png(file="outputs/SCEdiff_summer21-22.png", units="cm", width=25, height=20, res=600)
 plot(SCEsumdif, col=cldif)
 dev.off()
+
 
 # qualitative analysis of proportions and frequency distributions
 # plotting frequency distribution of snow cover values -> plot all histograms together
@@ -356,10 +356,16 @@ lt22 <- ggplot() + geom_raster(lswt22, mapping = aes(x=x, y=y, fill = lake.surfa
 # to visualize the two plots together in a vertical sequence
 lt21 / lt22
 
+# saving the file in PNG format in the output folder
+png(file="outputs/LSWT_21-22.png", units="cm", width=25, height=20, res=600)
+lt21 / lt22
+dev.off()
+
 
 # computing differece in lake surface temperature between 2021 and 2022
 LSWTdif <- (lswt22 - lswt21)
 plot(LSWTdif)
+
 # changing color palette for a more clear visualization
 plot(LSWTdif, col=cldif)
 # let's use ggplot
@@ -378,6 +384,11 @@ red_blue <- c(red, blue)
 # plotting the snow difference with the new calibrated palette
 plot(LSWTdif, col=red_blue)
 
+# saving the file in PNG format in the output folder
+png(file="outputs/LSWTdiff_21-22.png", units="cm", width=25, height=20, res=600)
+plot(LSWTdif, col=red_blue)
+dev.off()
+
 # it doesn't seems to be many differences in the surface temperature of the lakes
 # probably the melting of snow doesn't affect the surface water temperature
 
@@ -387,11 +398,23 @@ par(mfrow=c(1,2))
 hist(lswt21, xlim = c(279,285), ylim = c(0,500))
 hist(lswt22, xlim = c(279,285), ylim = c(0,500))
 
+# saving the file in PNG format in the output folder
+png(file="outputs/LSWThist_21-22.png", units="cm", width=25, height=20, res=600)
+par(mfrow=c(1,2))
+hist(lswt21, xlim = c(279,285), ylim = c(0,500))
+hist(lswt22, xlim = c(279,285), ylim = c(0,500))
+dev.off()
+
 # plotting values of 2022 against 2021
 # comparing data one in function of the other
 plot(lswt21, lswt22, xlab = "Lake Surface Water Temperature in 2021", ylab = "Lake Surface Water Temperature in 2022", xlim = c(275,285), ylim = c(275,285)) 
 abline(0, 1, col="red") # plotting line, making it passing trough 0
 
+# saving the file in PNG format in the output folder
+png(file="outputs/LSWT_scatterplot_21-22.png", units="cm", width=25, height=20, res=600)
+plot(lswt21, lswt22, xlab = "Lake Surface Water Temperature in 2021", ylab = "Lake Surface Water Temperature in 2022", xlim = c(275,285), ylim = c(275,285)) 
+abline(0, 1, col="red")
+dev.off()
 
 
 
@@ -432,46 +455,5 @@ plot(fpar22)
 # SSM NON VA BENE dati a fascie
 # LST (bassa qualità immagine)
 # NDVI da errore nel caricare il file!!!
-
-
-
-# importing Copernicus data for land surface temperature winter 2021
-lst2021 <- raster("c_gls_FAPAR300-RT6_202203100000_GLOBE_OLCI_V1.1.2.nc")
-# cropping the image focusing on the same area of interest
-lst21 <- crop(lst2021, ext)
-plot(lst21)
-# importing Copernicus data for land surface temperature winter 2021
-lst2022 <- raster("c_gls_LST10-DC_202201110000_GLOBE_GEO_V2.0.1.nc")
-# cropping the image focusing on the same area of interest
-lst22 <- crop(lst2022, ext)
-plot(lst22)
-
-par(mfrow=c(2,1)) # strani e unità di misura diverse
-plot(lst21)
-plot(lst22)
-
-dev.off()
-
-
-# NDVI da errore nel caricare il file!!!
-setwd("/Users/magalicorti/Desktop/ndvi/")
-# importing Copernicus data for land surface temperature winter 2021
-ndvi2021 <- raster("c_gls_NDVI300_202103210000_GLOBE_OLCI_V2.0.1.nc")
-# cropping the image focusing on the same area of interest
-ndvi21 <- crop(ndvi2021, ext)
-plot(ndvi21)
-# importing Copernicus data for land surface temperature winter 2021
-ndvi2022 <- raster("c_gls_NDVI300_202203210000_GLOBE_OLCI_V2.0.1.nc")
-# cropping the image focusing on the same area of interest
-ndvi22 <- crop(ndvi2022, ext)
-plot(ndvi22)
-
-par(mfrow=c(1,2))
-plot(ndvi21)
-plot(ndvi22)
-dev.off()
-
-
-
 
 
