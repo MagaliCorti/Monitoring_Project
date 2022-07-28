@@ -36,6 +36,28 @@ snow20210111 <- raster("c_gls_SCE500_202101110000_CEURO_MODIS_V1.0.1.nc")
 snow21 <- crop(snow20210111, ext)
 plot(snow21)
 
+# otherwise to import multiple data with the same pattern in the name I can create a list and use the lapply function
+# this is very useful when we have many file to import
+rlist <- list.files(pattern = "SCE")
+rlist # list of 4 images
+# applying to all the objects in the list the rester function
+list_rast <- lapply(rlist, raster)
+list_rast
+# creating a stack
+snowstack <- stack(list_rast)
+snowstack
+
+# plotting together all the images
+plot(snowstack)
+
+# to unstack the images we can use the $ symbol
+# for example to extract just the first image 
+# chacking the names of the images and selecting the first
+snowstack
+plot(snowstack$Snow.Cover.Extent.1)
+
+
+
 # using ggplot function with viridis (changing colorRampPalette)
 p21 <- ggplot() + geom_raster(snow21, mapping = aes(x=x, y=y, fill = Snow.Cover.Extent)) + scale_fill_viridis() + ggtitle("Snow Cover in winter 2021")
 p22 <- ggplot() + geom_raster(snow22, mapping = aes(x=x, y=y, fill = Snow.Cover.Extent)) + scale_fill_viridis() + ggtitle("Snow Cover in winter 2022")
@@ -82,6 +104,12 @@ dev.off()
 # comparing data one in function of the other
 plot(snow21, snow22, xlab = "Snow Cover Extent in winter 2021", ylab = "Snow Cover Extent in winter 2022") 
 abline(0, 1, col="red") # plotting line, making it passing trough 0
+
+# saving the file in PNG format in the output folder
+png(file="outputs/SCE_scatterplot_winter21-22.png", units="cm", width=25, height=20, res=600)
+plot(snow21, snow22, xlab = "Snow Cover Extent in winter 2021", ylab = "Snow Cover Extent in winter 2022") 
+abline(0, 1, col="red")
+dev.off()
 
 # plotting automathically all graphs together, very usefull when we have many graphs
 pairs(snowstack)
@@ -142,6 +170,11 @@ PR22 <- ggplot(proportion22, aes(x=cover, y=prop22, color=cover)) + geom_bar(sta
 # plotting the 2 ggplot graph together in one row using a different package tha patchwork
 grid.arrange(PR21, PR22, nrow=1)
 
+# saving the file in PNG format in the output folder
+png(file="outputs/SCE_proportions_winter21-22.png", units="cm", width=25, height=20, res=600)
+grid.arrange(PR21, PR22, nrow=1)
+dev.off()
+
 
 
 ##### Checking the state of snow cover extent in summer #####
@@ -167,6 +200,10 @@ ps22 <- ggplot() + geom_raster(snowsum22, mapping = aes(x=x, y=y, fill = Snow.Co
 # to visualize the two plots together in a vertical sequence
 ps21 / ps22
 
+# saving the file in PNG format in the output folder
+png(file="outputs/SCE_summer21-22.png", units="cm", width=25, height=20, res=600)
+ps21 / ps22
+dev.off()
 
 # computing differece in snow cover between summer 2021 and 2022
 SCEsumdif <- (snowsum22 - snowsum21)
@@ -175,6 +212,10 @@ plot(SCEsumdif, col=cldif)
 # results in difference very likely biased by cloud cover
 # let's look at numbers!
 
+# saving the file in PNG format in the output folder
+png(file="outputs/SCEdiff_summer21-22.png", units="cm", width=25, height=20, res=600)
+plot(SCEsumdif, col=cldif)
+dev.off()
 
 # qualitative analysis of proportions and frequency distributions
 # plotting frequency distribution of snow cover values -> plot all histograms together
@@ -182,10 +223,23 @@ par(mfrow=c(1,2))
 hist(snowsum21, xlim = c(0,200), main = "Snow Cover Extent in summer 2021", xlab = "Flag Value")
 hist(snowsum22, xlim = c(0,200), main = "Snow Cover Extent in summer 2022", xlab = "Flag Value")
 
+# saving the file in PNG format in the output folder
+png(file="outputs/SCEhist_summer21-22.png", units="cm", width=25, height=20, res=600)
+par(mfrow=c(1,2))
+hist(snowsum21, xlim = c(0,200), main = "Snow Cover Extent in summer 2021", xlab = "Flag Value")
+hist(snowsum22, xlim = c(0,200), main = "Snow Cover Extent in summer 2022", xlab = "Flag Value")
+dev.off()
+
 # plotting values of 2022 against 2021
 # comparing data one in function of the other
 plot(snowsum21, snowsum22, xlab = "Snow Cover Extent in summer 2021", ylab = "Snow Cover Extent in summer 2022") 
 abline(0, 1, col="red") # plotting line, making it passing trough 0
+
+# saving the file in PNG format in the output folder
+png(file="outputs/SCE_scatterplot_summer21-22.png", units="cm", width=25, height=20, res=600)
+plot(snowsum21, snowsum22, xlab = "Snow Cover Extent in summer 2021", ylab = "Snow Cover Extent in summer 2022") 
+abline(0, 1, col="red") 
+dev.off()
 
 
 # computing proportiuons of snow cover in summer 2021
@@ -242,6 +296,10 @@ PR22s <- ggplot(proportion22s, aes(x=cover, y=propsum22, color=cover)) + geom_ba
 # plotting the 2 ggplot graph together in one row using a different package tha patchwork
 grid.arrange(PR21s, PR22s, nrow=1)
 
+# saving the file in PNG format in the output folder
+png(file="outputs/SCE_proportions_summer21-22.png", units="cm", width=25, height=20, res=600)
+grid.arrange(PR21s, PR22s, nrow=1)
+dev.off()
 
 # let's compare winter and summer situations
 # images
@@ -249,29 +307,16 @@ grid.arrange(p21, ps21, p21, ps22, nrow=2)
 # proportions
 grid.arrange(PR21, PR21s, PR22, PR22s, nrow=2)
 
+# saving the file in PNG format in the output folder
+png(file="outputs/SCE_proportions_21-22.png", units="cm", width=25, height=20, res=600)
+grid.arrange(PR21, PR21s, PR22, PR22s, nrow=2)
+dev.off()
+
 
 
 ##### Now let's see if we can see differences in the temperature of the lakes present in the region #####
 
-# checking the snow cover extent in the January, February and March for both the year considered
-# when the snow is consistenly molten?
-# does the melting of snow affect the surface water temperature?
-
-# setting the working directory with the time series
-setwd("/Users/magalicorti/Desktop/project/SCE/")
-
-# to import multiple data with the same pattern in the name I can create a list and use the lapply function
-rlist <- list.files(pattern = "SCE")
-rlist # list of 8 images
-# applying to all the objects in the list the rester function
-list_rast <- lapply(rlist, raster)
-list_rast
-# creating a stack
-snowstack <- stack(list_rast)
-snowstack
-
-# plotting together all the images
-plot(snowstack)
+# Does snow and it's melting affect the surface water temperature? 
 
 
 # LSWT - Lake Surface Water Temperature
@@ -350,11 +395,9 @@ abline(0, 1, col="red") # plotting line, making it passing trough 0
 
 
 
-
-
-
-
 #### Now let's see the state of the vegetation looking at the fraction of the solar radiation absorbed by live leaves for the photosynthesis  ####
+
+# let's look at the differences between summer and winter, how the snow cover influence the absorbed radiation?
 
 # FPAR - Fraction of Absorbed Photosynthetically Active Radiation
 
@@ -378,13 +421,10 @@ plot(fpar22)
 
 
 
-setwd("/Users/magalicorti/Desktop/project/SCE/")
 
 
-smarch2021 <- raster("c_gls_SCE500_202103150000_CEURO_MODIS_V1.0.1.nc")
-# cropping the image focusing on the same area of interest
-smarch21 <- crop(smarch2021, ext)
-plot(smarch21)
+
+
 
 
 
