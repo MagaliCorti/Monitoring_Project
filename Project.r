@@ -456,4 +456,3 @@ plot(fpar22)
 # LST (bassa qualità immagine)
 # NDVI da errore nel caricare il file!!!
 
-
