@@ -30,6 +30,11 @@ snow22 <- crop(snow20220125, ext)
 # visualizing new image
 plot(snow22)
 
+# saving the file in PNG format in the output folder
+png(file="outputs/SCE_winter22.png", units="cm", width=25, height=20, res=600)
+plot(snow22)
+dev.off()
+
 # importing Copernicus data for winter 2021
 snow20210111 <- raster("c_gls_SCE500_202101110000_CEURO_MODIS_V1.0.1.nc")
 # cropping the image focusing on the same area of interest
