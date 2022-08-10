@@ -423,41 +423,7 @@ dev.off()
 
 
 
-#### Now let's see the state of the vegetation looking at the fraction of the solar radiation absorbed by live leaves for the photosynthesis  ####
-
-# let's look at the differences between summer and winter, how the snow cover influence the absorbed radiation?
-
-# FPAR - Fraction of Absorbed Photosynthetically Active Radiation
-
-# importing Copernicus data for Fraction of Absorbed Photosynthetically Active Radiation in 2022
-fpar2022 <- raster("c_gls_FAPAR300-RT6_202203100000_GLOBE_OLCI_V1.1.2.nc")
-# cropping the image focusing on the same area of interest
-fpar22 <- crop(fpar2022, ext)
-plot(fpar22)
-
-fpar2021 <- raster("c_gls_FAPAR300-RT0_202103100000_GLOBE_OLCI_V1.1.1(1).nc")
-# cropping the image focusing on the same area of interest
-fpar21 <- crop(fpar2021, ext)
-plot(fpar21)
-
-par(mfrow=c(2,1))
-plot(fpar21)
-plot(fpar22)
 
 
 
-
-
-
-
-
-
-
-
-
-
-# SWI messeggio di warning NON VA BENE
-# SSM NON VA BENE dati a fascie
-# LST (bassa qualità immagine)
-# NDVI da errore nel caricare il file!!!
 
