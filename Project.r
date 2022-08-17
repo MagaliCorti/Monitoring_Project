@@ -5,17 +5,17 @@
 setwd("/Users/magalicorti/Desktop/project/")
 
 # recalling the libraries for already installed packaged we will need
-library(raster)        # to import files in R, and stacking operaytions
+library(raster)        # to import files in R, and for stacking operations
 library(ggplot2)       # to plot data with ggplot function
-library(gridExtra)     # to plot together plots made with ggplot
+library(gridExtra)     # to plot together different plots made with ggplot
 library (RStoolbox)    # for remote sensing data analysis -> to make the classification
 library(ncdf4)         # to open Copernicus data with nc extention
 library(viridis)       # to use viridis palette
-library(patchwork)     # to plot together plots made with ggplot
+library(patchwork)     # to plot together different plots made with ggplot
  
 
 
-##### With this project I want to highligt the differences in Snow Cover Extent in the Cetral Alps in Nortern Italy between the winter 2021 and winter 2022 ##### 
+##### With this project I want to highlight the differences in Snow Cover Extent in the Cetral Alps in Nortern Italy between winter 2021 and winter 2022 ##### 
 
 # SCE - Snow Cover Extent
 # Copernicus data with geometric resolution of 500m x 500m per pixel
@@ -57,7 +57,7 @@ plot(snowstack)
 
 # to unstack the images we can use the $ symbol
 # for example to extract just the first image 
-# chacking the names of the images and selecting the first
+# checking the names of the images and selecting the first
 snowstack
 plot(snowstack$Snow.Cover.Extent.1)
 
@@ -103,7 +103,6 @@ hist(snow22, xlim = c(0,200), main = "Snow Cover Extent in winter 2022", xlab = 
 dev.off()
 
 
-# PERCHE DISTRIBUZIONE DEI. DATI LUNGO LINEE?? GUARDO MAPPE -> risoluzione, cropping ??
 # plotting values of 2022 against 2021
 # comparing data one in function of the other
 plot(snow21, snow22, xlab = "Snow Cover Extent in winter 2021", ylab = "Snow Cover Extent in winter 2022") 
@@ -122,6 +121,7 @@ pairs(snowstack)
 # computing proportiuons of snow cover in winter 2021
 # passing from a layers with values ranging 0-200 to 3 values (1 - 2 - 3)
 s21 <- unsuperClass(snow21, nClasses=3)
+s21
 # plotting the two maps, the original one and the new one after running the unsupervised classification (in one column and two rows) -> identifying the three classes
 par(mfrow=c(2,1))
 plot(snow21)
@@ -149,6 +149,7 @@ proportion21 # quantitative data
 # stat - statistics used = identity because we're using data as they are (no median or mean)
 # for changing limit from 0 to 1 use ylim()
 PR21 <- ggplot(proportion21, aes(x=cover, y=prop21, color=cover)) + geom_bar(stat="identity", fill="white") + ylim(0,1)
+PR21
 
 
 # let's do the same thing for winter 2022
@@ -169,8 +170,9 @@ proportion22 <- data.frame(cover, prop22)
 proportion22
 
 PR22 <- ggplot(proportion22, aes(x=cover, y=prop22, color=cover)) + geom_bar(stat="identity", fill="white") + ylim(0,1)
+PR22
 
-# plotting the 2 ggplot graph together in one row using a different package tha patchwork
+# plotting the 2 ggplot graph together in one row using a different package than patchwork (gridExtra)
 grid.arrange(PR21, PR22, nrow=1)
 
 # saving the file in PNG format in the output folder
@@ -277,6 +279,7 @@ proportion21s # quantitative data
 # stat - statistics used = identity because we're using data as they are (no median or mean)
 # for changing limit from 0 to 1 use ylim()
 PR21s <- ggplot(proportion21s, aes(x=cover, y=propsum21, color=cover)) + geom_bar(stat="identity", fill="white") + ylim(0,1)
+PR21s
 
 
 # let's do the same thing for winter 2022
@@ -297,6 +300,7 @@ proportion22s <- data.frame(cover, propsum22)
 proportion22s
 
 PR22s <- ggplot(proportion22s, aes(x=cover, y=propsum22, color=cover)) + geom_bar(stat="identity", fill="white") + ylim(0,1)
+PR22s
 
 # plotting the 2 ggplot graph together in one row using a different package tha patchwork
 grid.arrange(PR21s, PR22s, nrow=1)
@@ -319,7 +323,7 @@ dev.off()
 
 
 
-##### Now let's see if we can see differences in the temperature of the lakes present in the region #####
+##### Now let's see if we can asses any difference in the temperature of the lakes present in the region #####
 
 # Does snow and it's melting affect the surface water temperature? 
 
@@ -376,7 +380,8 @@ plot(LSWTdif, col=cldif)
 # let's use ggplot
 ldif22 <- ggplot() + geom_raster(LSWTdif, mapping = aes(x=x, y=y, fill = layer))+ scale_fill_viridis(option="magma") + ggtitle("Difference in Lake Surface Water Temperature")
 
-# this palette does not center in 0 with white color we must recalibrate it
+# this palette does not center in 0 with white color, it's difficult to interpret
+# we must recalibrate it!
 # extracting the min and max values of LSWTdif, multiplying it by 10 we obtain the number of shades for each color
 LSWTdif # values: -3.58, 1.64  (min, max)
 # palette for the bottom half of the image, with negative values
@@ -395,7 +400,7 @@ plot(LSWTdif, col=red_blue)
 dev.off()
 
 # it doesn't seems to be many differences in the surface temperature of the lakes
-# probably the melting of snow doesn't affect the surface water temperature
+# probably the melting of snow doesn't affect substancially the surface water temperature
 
 
 # plotting frequency distribution histogrames
