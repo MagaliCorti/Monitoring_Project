@@ -15,6 +15,7 @@ library(patchwork)     # to plot together different plots made with ggplot
  
 
 
+
 ##### With this project I want to highlight the differences in Snow Cover Extent in the Cetral Alps in Nortern Italy between winter 2021 and winter 2022 ##### 
 
 # SCE - Snow Cover Extent
@@ -119,7 +120,7 @@ pairs(snowstack)
 
 
 # computing proportiuons of snow cover in winter 2021
-# passing from a layers with values ranging 0-200 to 3 values (1 - 2 - 3)
+# passing from a single layer with values ranging 0-200 to 3 values (1 - 2 - 3)
 s21 <- unsuperClass(snow21, nClasses=3)
 s21
 # plotting the two maps, the original one and the new one after running the unsupervised classification (in one column and two rows) -> identifying the three classes
@@ -179,6 +180,7 @@ grid.arrange(PR21, PR22, nrow=1)
 png(file="outputs/SCE_proportions_winter21-22.png", units="cm", width=25, height=20, res=600)
 grid.arrange(PR21, PR22, nrow=1)
 dev.off()
+
 
 
 
@@ -323,9 +325,10 @@ dev.off()
 
 
 
+
 ##### Now let's see if we can asses any difference in the temperature of the lakes present in the region #####
 
-# Does snow and it's melting affect the surface water temperature? 
+# Does snow and its melting affect the surface water temperature? 
 
 
 # LSWT - Lake Surface Water Temperature
@@ -354,6 +357,7 @@ plot(lswt21)
 lswt22 <- crop(lswt2022, ext1)
 plot(lswt22)
 
+# plotting the images together
 par(mfrow=c(2,1)) 
 plot(lswt21, main = "Lake Surface Water Temperature in 2021")
 plot(lswt22, main = "Lake Surface Water Temperature in 2022")
